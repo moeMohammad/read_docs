@@ -5,7 +5,7 @@ import re
 def main():
     found_kw = []
     kw = get_kw("keywords")
-    text = extract_text("sample2.pdf")
+    text = extract_text("sample.pdf")
     for word in kw:
         if is_word_in_text(word, str(text)):
             found_kw.append(word)
