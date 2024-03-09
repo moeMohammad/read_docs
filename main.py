@@ -3,13 +3,14 @@ import re
 import docx2txt
 from pptx import Presentation
 
+
 def main():
-    found_kw = []
+    found_kw = {}
     kw = get_kw("keywords")
-    text = extract_text("CSBP319_SP18_LCN_3.pptx")
+    text = extract_text("sample.pdf")
     for word in kw:
         if is_word_in_text(word, str(text)):
-            found_kw.append(word)
+            found_kw[word] = entropy_kw(word, str(text))
     print(found_kw)
 
 
@@ -31,7 +32,7 @@ def extract_text(file):
     elif file.endswith(".docx"):
         text = docx2txt.process(file)
     elif file.endswith(".pptx"):
-        prs = Presentation("CSBP319_SP18_LCN_3.pptx")
+        prs = Presentation(file)
         text_runs = []
         for slide in prs.slides:
             for shape in slide.shapes:
@@ -45,7 +46,7 @@ def extract_text(file):
     return text
 
 
-def is_word_in_text(word, text):
+def is_word_in_text(word : str, text : str) -> bool:
     """
     Check if a word is in a text.
 
@@ -76,6 +77,16 @@ def is_word_in_text(word, text):
     matches = re.search(pattern, text)
     return bool(matches)
 
-
+def entropy_kw(word, string):
+    if "+" in word:
+        word = re.escape(word)
+    pattern = r'(^|[^\w]){}([^\w]|$)'.format(word)
+    matches = re.findall(pattern, string, re.IGNORECASE)
+    entropy = 1/len(matches)
+    if entropy.is_integer():
+        return int(entropy)
+    else:
+        return round(entropy, 3)
+    
 if __name__ == "__main__":
     main()
