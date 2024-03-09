@@ -1,11 +1,12 @@
 import fitz
 import re
-
+import docx2txt
+from pptx import Presentation
 
 def main():
     found_kw = []
     kw = get_kw("keywords")
-    text = extract_text("sample.pdf")
+    text = extract_text("CSBP319_SP18_LCN_3.pptx")
     for word in kw:
         if is_word_in_text(word, str(text)):
             found_kw.append(word)
@@ -20,13 +21,28 @@ def get_kw(file_name):
     return kw
 
 
-def extract_text(pdf_name):
-    doc = fitz.open(pdf_name)
-    text = ""
-    for page in doc:
-        text += page.get_text()
-    words = text.splitlines()
-    return words
+def extract_text(file):
+    if file.endswith(".pdf"):
+        doc = fitz.open(file)
+        text = ""
+        for page in doc:
+            text += page.get_text()
+        text = text.splitlines()
+    elif file.endswith(".docx"):
+        text = docx2txt.process(file)
+    elif file.endswith(".pptx"):
+        prs = Presentation("CSBP319_SP18_LCN_3.pptx")
+        text_runs = []
+        for slide in prs.slides:
+            for shape in slide.shapes:
+                if not shape.has_text_frame:
+                    continue
+                for paragraph in shape.text_frame.paragraphs:
+                    for run in paragraph.runs:
+                        text_runs.append(run.text)
+        text = "\n".join(text_runs)
+    
+    return text
 
 
 def is_word_in_text(word, text):
